@@ -100,7 +100,7 @@ fun HomeScreen(
                 icon = Icons.Outlined.Payments
             )
             SummaryCard(
-                label = "Daily P&L (recorded)",
+                label = "Daily",
                 value = Format.signedMoney(dailyTotal),
                 modifier = Modifier.weight(1f),
                 icon = Icons.Outlined.ShowChart

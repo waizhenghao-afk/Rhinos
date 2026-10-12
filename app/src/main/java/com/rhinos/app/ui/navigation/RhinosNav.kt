@@ -1,5 +1,6 @@
 package com.rhinos.app.ui.navigation
 
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
@@ -19,6 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -34,6 +38,7 @@ import com.rhinos.app.ui.more.MoreScreen
 import com.rhinos.app.ui.notes.NotesScreen
 import com.rhinos.app.ui.reports.ReportsScreen
 import com.rhinos.app.ui.trades.TradesScreen
+import kotlin.math.abs
 
 /** Main sections. Bottom bar keeps 5 slots; Reports/Notes live behind "More". */
 enum class Section(
@@ -53,6 +58,22 @@ fun RhinosRoot(container: AppContainer) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
+    val currentSection = Section.entries.firstOrNull { section ->
+        currentDestination?.hierarchy?.any {
+            it.route == section.route || (section == Section.MORE && (
+                it.route == "reports" || it.route == "notes" || it.route == "settings"))
+        } == true
+    } ?: Section.HOME
+
+    fun navigateToSection(section: Section) {
+        navController.navigate(section.route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     val settings by container.settingsRepository.settings.collectAsStateWithLifecycle()
     if (!settings.onboarded) {
@@ -69,22 +90,26 @@ fun RhinosRoot(container: AppContainer) {
                             it.route == "reports" || it.route == "notes" || it.route == "settings"))
                     } == true
                     NavigationBarItem(
+                        modifier = Modifier.weight(1f),
                         selected = selected,
-                        onClick = {
-                            navController.navigate(section.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
+                        onClick = { navigateToSection(section) },
                         icon = { Icon(section.icon, contentDescription = section.label) },
-                        label = { Text(section.label) },
+                        label = {
+                            Text(
+                                section.label,
+                                maxLines = 1,
+                                softWrap = false,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontSize = 10.sp
+                            )
+                        },
+                        alwaysShowLabel = false,
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -94,7 +119,27 @@ fun RhinosRoot(container: AppContainer) {
         NavHost(
             navController = navController,
             startDestination = Section.HOME.route,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier
+                .padding(padding)
+                .pointerInput(currentDestination?.route) {
+                    var dragDistance = 0f
+                    val swipeThreshold = 72.dp.toPx()
+                    detectHorizontalDragGestures(
+                        onHorizontalDrag = { _, dragAmount ->
+                            dragDistance += dragAmount
+                        },
+                        onDragEnd = {
+                            if (abs(dragDistance) >= swipeThreshold) {
+                                val direction = if (dragDistance < 0f) 1 else -1
+                                val destinationIndex = (currentSection.ordinal + direction)
+                                    .coerceIn(Section.entries.indices)
+                                navigateToSection(Section.entries[destinationIndex])
+                            }
+                            dragDistance = 0f
+                        },
+                        onDragCancel = { dragDistance = 0f }
+                    )
+                }
         ) {
             composable(Section.HOME.route) { HomeScreen(container, onOpenTrades = { navController.navigate("trades") }) }
             composable(Section.TRADES.route) { TradesScreen(container) }

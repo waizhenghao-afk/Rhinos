@@ -56,7 +56,9 @@ fun SummaryCard(
                 Text(
                     label,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
             Spacer(Modifier.height(6.dp))

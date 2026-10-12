@@ -2,5 +2,13 @@
 <resources>
     <style name="Theme.Rhinos" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <style name="Theme.Rhinos.Splash" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
     </style>
 </resources>
