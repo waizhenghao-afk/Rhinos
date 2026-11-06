@@ -69,29 +69,43 @@ app/src/main/java/com/rhinos/app/
     └── home/ trades/ daily/ reports/ notes/ margin/ more/ settings/
 ```
 
-## How to build
+## Build prerequisites
 
-### With the included wrapper (uses this machine's local toolchain)
+The JDK and Android SDK are not stored in this repository. Install JDK 21 and
+Android SDK Platform 35 with Build Tools 35.0.0. Android Studio can install the
+SDK components when you open the project. Alternatively, install the Android
+SDK command-line tools from the [official Android Studio downloads](https://developer.android.com/studio)
+and run:
+
+```bash
+sdkmanager --licenses
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+```
+
+Install JDK 21 from a trusted distribution such as
+[Eclipse Temurin](https://adoptium.net/temurin/releases/?version=21). Set
+`JAVA_HOME` to the JDK installation and configure the Android SDK in Android
+Studio or in your local, untracked `local.properties` file. Do not commit
+machine-specific SDK paths.
+
+The Gradle wrapper downloads Gradle 8.10.2 on first use.
+
+## How to build
 
 ```bash
 ./gradlew assembleDebug
-# or on Windows:
+# On Windows:
 gradlew.bat assembleDebug
 ```
 
 Output: `app/build/outputs/apk/debug/app-debug.apk`
 
-### With your own Android Studio / Gradle
-
-Open the folder in Android Studio and press Run, or from a terminal with a
-JDK 17+ and Android SDK installed:
+Open the folder in Android Studio and press Run, or use the wrapper from a
+terminal after installing the prerequisites above:
 
 ```bash
 ./gradlew assembleDebug
 ```
-
-`local.properties` already points `sdk.dir` at the SDK used to create the APK —
-Android Studio will rewrite it to your own SDK location automatically.
 
 ### Release APK
 

@@ -35,3 +35,4 @@ captures/
 # signing / env files
 *.properties
 !gradle.properties
+!gradle/wrapper/gradle-wrapper.properties
